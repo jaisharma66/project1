@@ -1,6 +1,7 @@
 import os
+import requests
 
-from flask import Flask, session, render_template, request, flash, g, redirect, url_for
+from flask import Flask, session, render_template, request, flash, g, redirect, url_for, json, jsonify
 from functools import wraps
 from flask_session import Session
 from sqlalchemy import create_engine
@@ -84,15 +85,25 @@ def search():
     #     print (row[0], "this is a string")
     return render_template("search.html", result=result)
 
-@app.route("/search/<str:zipcode>")
+@app.route("/search/<string:zipcode>")
 @login_required
 def search_info(zipcode):
-    retrieved_info = db.execute("SELECT * FROM zip WHERE id = :id", {"id": zipcode}).fetchone()
+    retrieved_info = db.execute("SELECT * FROM zip WHERE zipcode = :zipcode", {"zipcode": str(zipcode)}).fetchone()
     if retrieved_info is None:
         # Check Rendered Template
-        return render_tempalte("failure.html")
+        return render_template("failure.html")
+    api_param = db.execute("SELECT lat,long FROM zip WHERE zipcode = :zipcode", {"zipcode": str(zipcode)}).fetchone()
+    api_key = "4dae0251077ca4b15897145e85bb08d0"
+    requested = requests.get('https://api.darksky.net/forecast/' + api_key + '/' + str(api_param.lat) + ',' + str(api_param.long))
+    if requested.status_code != 200:
+        raise Exception("Unsuccessful Access")
+    return render_template("search_info.html", retrieved_info=retrieved_info)
 
-    return render_tempalte("search_info", retrieved_info=retrieved_info)
+# @app.route("/api/search/<int:zipcode>")
+# def search_info_api(zipcode):
+#     # https://api.darksky.net/forecast/4dae0251077ca4b15897145e85bb08d0/37.8267,-122.4233
+#     # ADD ERROR HANDLING application.py flaskari5
+
 
 if __name__ == "__main__":
     index();

@@ -1,4 +1,25 @@
 {% extends "layout.html" %}
 
 {% block body %}
+    <h1>City Information</h1>
+    <table class="table table-striped">
+        <thead>
+            <th scope="col">Zipcode</th>
+            <th scope="col">City</th>
+            <th scope="col">State</th>
+            <th scope="col">Latitude</th>
+            <th scope="col">Longitude</th>
+            <th scope="col">Population</th>
+        </thead>
+        <tbody>
+            <tr>
+                <td>{{ retrieved_info.zipcode }}</td>
+                <td>{{ retrieved_info.city }}</td>
+                <td>{{ retrieved_info.state }}</td>
+                <td>{{ retrieved_info.lat }}</td>
+                <td>{{ retrieved_info.long }}</td>
+                <td>{{ retrieved_info.population }}</td>
+            </tr>
+        </tbody>
+    </table>
 {% endblock %}
