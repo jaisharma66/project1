@@ -1,14 +1,20 @@
 {% extends "layout.html" %}
 
+
 {% block body %}
-    <form action="{{ url_for('registration')}}">
-        <div class="form-group">
-            <button class="btn btn-primary">Register Here</button>
-        </div>
-    </form>
-    <form action="{{ url_for('login_r')}}">
-        <div class="form-group">
-            <button class="btn btn-primary">Login Here</button>
-        </div>
-    </form>
+    <center><h1>Login or Register</h1></center>
+    <center>
+        <form action="{{ url_for('registration')}}">
+            <div class="form-group">
+                <button class="btn btn-primary">Register Here</button>
+            </div>
+        </form>
+    </center>
+    <center>
+        <form action="{{ url_for('login_r')}}">
+            <div class="form-group">
+                <button class="btn btn-primary">Login Here</button>
+            </div>
+        </form>
+    </center>
 {% endblock %}

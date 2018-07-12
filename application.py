@@ -93,9 +93,10 @@ def search_info(zipcode):
     retrieved_info = db.execute("SELECT * FROM zip WHERE zipcode = :zipcode", {"zipcode": str(zipcode)}).fetchone()
     if retrieved_info is None:
         # Check Rendered Template
-        return render_template("failure.html")
+        # return render_template("failure.html")
+        raise Exception("Error, no such zipcode!")
     api_param = db.execute("SELECT lat,long FROM zip WHERE zipcode = :zipcode", {"zipcode": str(zipcode)}).fetchone()
-    comment_result = db.execute("SELECT * FROM comments")
+    comment_result = db.execute("SELECT * FROM comments WHERE place = '" + zipcode + "'").fetchone()
     api_key = "4dae0251077ca4b15897145e85bb08d0"
     requested = requests.get('https://api.darksky.net/forecast/' + api_key + '/' + str(api_param.lat) + ',' + str(api_param.long) + '?exclude=currently,minutely,hourly,alerts,flags')
     # print(requested.json(), "requested string")
@@ -122,19 +123,20 @@ def search_info(zipcode):
     return render_template("search_info.html", retrieved_info=retrieved_info, current_weather=current_weather, time=time, temperature=temperature, \
         dew_point=dew_point, humidity=humidity, comment_result=comment_result)
 
-@app.route("/comment/<string:city>/<string:zipcode>", methods=["POST"])
+@app.route("/comment/<string:zipcode>", methods=["POST"])
 @login_required
-def comment(city, zipcode):
+def comment(zipcode):
     added = request.form.get("comment_section")
     # print(session['user_login'])
     user = session['user_login']
     # db.execute("INSERT INTO users (name, username, password) VALUES (:name, :username, :password)",
     #     {"name": name, "username": username, "password": password})
-    check = db.execute("SELECT username,city FROM comments WHERE username='" + user + "' AND city='" + city + "'").fetchall()
-    if check == None:
-        db.execute("INSERT INTO comments (username, comment, place) VALUES (:username, :comment, :place)",
-            {"username": session['user_login'], "comment": added, "place": city})
-        search_info(zipcode)
+    check = db.execute("SELECT username,place FROM comments WHERE username='" + user + "' AND place='" + zipcode + "'").fetchall()
+    print(check)
+    if check == []:
+        db.execute("INSERT INTO comments (username, comment, place) VALUES (:username, :comment, :place)", {"username": session['user_login'], "comment": added, "place": zipcode})
+        db.commit()
+        return redirect(url_for("search_info", zipcode=zipcode))
     else:
         #add a URL template
         raise Exception("Already Commented")
@@ -144,7 +146,7 @@ def api_zipcode(zipcode):
     zipcode_new = db.execute("SELECT zipcode FROM zip WHERE zipcode = '" + zipcode + "'")
     if zipcode_new is None:
         return jsonify({"error": "Zip does not exist"}), 422
-    zipcode_total = db.execute("SELECT * FROM zip WHERE zipcode = '" + zipcode + "'")
+    zipcode_total = db.execute("SELECT * FROM zip WHERE zipcode = '" + zipcode + "'").fetchone()
     return jsonify({
         "place_name": str(zipcode_total.city),
         "state": str(zipcode_total.state),
@@ -155,9 +157,5 @@ def api_zipcode(zipcode):
         # ADD THE OTHER ITEM HERE
     })
 
-
-
 if __name__ == "__main__":
     index();
-
-#
