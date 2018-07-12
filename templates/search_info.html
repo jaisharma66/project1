@@ -41,7 +41,7 @@
             </tr>
         </tbody>
     </table>
-    <form action="{{ url_for('search_info') }}" method="post">
+    <form action="{{ url_for('comment', city=retrieved_info.city, zipcode=retrieved_info.zipcode) }}" method="post">
         <div class="form-group">
             <input class="form-control" name="comment_section" placeholder="Comment on this location">
         </div>
@@ -49,4 +49,16 @@
             <button class="btn btn-primary">Submit Comment</button>
         </div>
     </form>
+    <table class = "table table-striped">
+        <thead>
+            <th scope="col">User</th>
+            <th scope="col">Comment</th>
+        </thead>
+        <tbody>
+            <tr>
+                <td>{{ comment_result.username }}</td>
+                <td>{{ comment_result.comment }}</td>
+            </tr>
+        </tbody>
+    </table>
 {% endblock %}

@@ -66,7 +66,8 @@ def login():
     pass_login = request.form.get("pass_login")
     query = "SELECT username,password FROM users WHERE username = '%s' AND password = '%s'" % (user_login, pass_login)
     if db.execute(query).rowcount == 1:
-        session[user_login] = user_login;
+        # session[user_login] = user_login; prev
+        session['user_login'] = user_login;
         session['logged_in'] = True
         return render_template("search.html")
     else:
@@ -86,7 +87,7 @@ def search():
     #     print (row[0], "this is a string")
     return render_template("search.html", result=result)
 
-@app.route("/search/<string:zipcode>", methods)
+@app.route("/search/<string:zipcode>")
 @login_required
 def search_info(zipcode):
     retrieved_info = db.execute("SELECT * FROM zip WHERE zipcode = :zipcode", {"zipcode": str(zipcode)}).fetchone()
@@ -94,12 +95,16 @@ def search_info(zipcode):
         # Check Rendered Template
         return render_template("failure.html")
     api_param = db.execute("SELECT lat,long FROM zip WHERE zipcode = :zipcode", {"zipcode": str(zipcode)}).fetchone()
+    comment_result = db.execute("SELECT * FROM comments")
     api_key = "4dae0251077ca4b15897145e85bb08d0"
     requested = requests.get('https://api.darksky.net/forecast/' + api_key + '/' + str(api_param.lat) + ',' + str(api_param.long) + '?exclude=currently,minutely,hourly,alerts,flags')
     # print(requested.json(), "requested string")
     if requested.status_code != 200:
         raise Exception("Unsuccessful Access")
     data = requested.json()
+    #WHAT OUTPUT
+    print(db.execute("SELECT username FROM comments WHERE username = 'jai'").fetchall())
+    #
     #current weather, time of report, textual summary, dew point, humidity as a percentage
     print(type(data), "This is a string")
     # Correct
@@ -108,17 +113,48 @@ def search_info(zipcode):
     temperature = data["daily"]["data"][0]["temperatureHigh"]
     dew_point = data["daily"]["data"][0]["dewPoint"]
     humidity = data["daily"]["data"][0]["humidity"] * 100
+    #test
+
     #
     # print(current_weather, "string 15")
     # text_summary = data['summary']
     # print(current_weather, text_summary)
     return render_template("search_info.html", retrieved_info=retrieved_info, current_weather=current_weather, time=time, temperature=temperature, \
-        dew_point=dew_point, humidity=humidity)
+        dew_point=dew_point, humidity=humidity, comment_result=comment_result)
 
-# @app.route("/api/search/<int:zipcode>")
-# def search_info_api(zipcode):
-#     # https://api.darksky.net/forecast/4dae0251077ca4b15897145e85bb08d0/37.8267,-122.4233
-#     # ADD ERROR HANDLING application.py flaskari5
+@app.route("/comment/<string:city>/<string:zipcode>", methods=["POST"])
+@login_required
+def comment(city, zipcode):
+    added = request.form.get("comment_section")
+    # print(session['user_login'])
+    user = session['user_login']
+    # db.execute("INSERT INTO users (name, username, password) VALUES (:name, :username, :password)",
+    #     {"name": name, "username": username, "password": password})
+    check = db.execute("SELECT username,city FROM comments WHERE username='" + user + "' AND city='" + city + "'").fetchall()
+    if check == None:
+        db.execute("INSERT INTO comments (username, comment, place) VALUES (:username, :comment, :place)",
+            {"username": session['user_login'], "comment": added, "place": city})
+        search_info(zipcode)
+    else:
+        #add a URL template
+        raise Exception("Already Commented")
+
+@app.route("/api/<string:zipcode>")
+def api_zipcode(zipcode):
+    zipcode_new = db.execute("SELECT zipcode FROM zip WHERE zipcode = '" + zipcode + "'")
+    if zipcode_new is None:
+        return jsonify({"error": "Zip does not exist"}), 422
+    zipcode_total = db.execute("SELECT * FROM zip WHERE zipcode = '" + zipcode + "'")
+    return jsonify({
+        "place_name": str(zipcode_total.city),
+        "state": str(zipcode_total.state),
+        "latitude": str(zipcode_total.lat),
+        "longitude": str(zipcode_total.long),
+        "zip": str(zipcode_total.zipcode),
+        "population": str(zipcode_total.population)
+        # ADD THE OTHER ITEM HERE
+    })
+
 
 
 if __name__ == "__main__":
