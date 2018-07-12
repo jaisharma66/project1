@@ -1,5 +1,6 @@
 import os
 import requests
+import datetime
 
 from flask import Flask, session, render_template, request, flash, g, redirect, url_for, json, jsonify
 from functools import wraps
@@ -85,7 +86,7 @@ def search():
     #     print (row[0], "this is a string")
     return render_template("search.html", result=result)
 
-@app.route("/search/<string:zipcode>")
+@app.route("/search/<string:zipcode>", methods)
 @login_required
 def search_info(zipcode):
     retrieved_info = db.execute("SELECT * FROM zip WHERE zipcode = :zipcode", {"zipcode": str(zipcode)}).fetchone()
@@ -94,10 +95,25 @@ def search_info(zipcode):
         return render_template("failure.html")
     api_param = db.execute("SELECT lat,long FROM zip WHERE zipcode = :zipcode", {"zipcode": str(zipcode)}).fetchone()
     api_key = "4dae0251077ca4b15897145e85bb08d0"
-    requested = requests.get('https://api.darksky.net/forecast/' + api_key + '/' + str(api_param.lat) + ',' + str(api_param.long))
+    requested = requests.get('https://api.darksky.net/forecast/' + api_key + '/' + str(api_param.lat) + ',' + str(api_param.long) + '?exclude=currently,minutely,hourly,alerts,flags')
+    # print(requested.json(), "requested string")
     if requested.status_code != 200:
         raise Exception("Unsuccessful Access")
-    return render_template("search_info.html", retrieved_info=retrieved_info)
+    data = requested.json()
+    #current weather, time of report, textual summary, dew point, humidity as a percentage
+    print(type(data), "This is a string")
+    # Correct
+    current_weather = data["daily"]["summary"]
+    time = datetime.datetime.fromtimestamp(data["daily"]["data"][0]["time"]).strftime('%Y-%m-%d %H:%M:%S')
+    temperature = data["daily"]["data"][0]["temperatureHigh"]
+    dew_point = data["daily"]["data"][0]["dewPoint"]
+    humidity = data["daily"]["data"][0]["humidity"] * 100
+    #
+    # print(current_weather, "string 15")
+    # text_summary = data['summary']
+    # print(current_weather, text_summary)
+    return render_template("search_info.html", retrieved_info=retrieved_info, current_weather=current_weather, time=time, temperature=temperature, \
+        dew_point=dew_point, humidity=humidity)
 
 # @app.route("/api/search/<int:zipcode>")
 # def search_info_api(zipcode):
@@ -107,3 +123,5 @@ def search_info(zipcode):
 
 if __name__ == "__main__":
     index();
+
+#
