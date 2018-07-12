@@ -1,6 +1,7 @@
 {% extends "layout.html" %}
 
 {% block body %}
+    <!-- Login failed form, with reprompt -->
     <h1>Your Login Failed</h1>
     <form action="{{ url_for('login') }}" method="post">
         <div class="form-group">

@@ -1,8 +1,8 @@
 {% extends "layout.html" %}
 
-
 {% block body %}
-    <center><h1>Login or Register</h1></center>
+    <!-- Buttons to Login, Register, or Logout -->
+    <center><h1>Login, Register, or Logout</h1></center>
     <center>
         <form action="{{ url_for('registration')}}">
             <div class="form-group">
@@ -14,6 +14,13 @@
         <form action="{{ url_for('login_r')}}">
             <div class="form-group">
                 <button class="btn btn-primary">Login Here</button>
+            </div>
+        </form>
+    </center>
+    <center>
+        <form action="{{ url_for('logout')}}">
+            <div class="form-group">
+                <button class="btn btn-primary">Logout</button>
             </div>
         </form>
     </center>

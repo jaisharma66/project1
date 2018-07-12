@@ -2,6 +2,7 @@
 
 {% block body %}
     <h1>City Information</h1>
+    <!-- Table for zipcode requested -->
     <table class="table table-striped">
         <thead>
             <th scope="col">Zipcode</th>
@@ -22,6 +23,7 @@
             </tr>
         </tbody>
     </table>
+    <!-- Weather Info pulled from API -->
     <h1>Weather Information</h1>
     <table class="table table-striped">
         <thead>
@@ -41,6 +43,7 @@
             </tr>
         </tbody>
     </table>
+    <!-- Comment Section for locations -->
     <form action="{{ url_for('comment', city=retrieved_info.city, zipcode=retrieved_info.zipcode) }}" method="post">
         <div class="form-group">
             <input class="form-control" name="comment_section" placeholder="Comment on this location">

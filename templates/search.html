@@ -5,6 +5,7 @@
 {% endblock %}
 
 {% block body %}
+    <!-- Search form post login -->
     <form action="{{ url_for('search') }}" method="post">
         <div class="form-group">
             <input class="form-control" name="search" placeholder="Search">
@@ -13,6 +14,7 @@
             <button class="btn btn-primary">Search</button>
         </div>
     </form>
+    <!-- Table displaying matching elements -->
     <h2>City and Zipcode</h2>
     <table class="table table-striped">
         <thead>

@@ -4,7 +4,9 @@
     Login
 {% endblock %}
 {% block body %}
+    <!-- Login page -->
     <h1>Login</h1>
+    <!-- If statement checking if the user needs to be reprompted with warning -->
     {% if user_reprompt_2 %}
         <div class="alert alert-warning" role="alert">
             Login failed, please try again.

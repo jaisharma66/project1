@@ -1,5 +1,7 @@
+# Imports
 import os
 import csv
+
 from sqlalchemy import create_engine
 from sqlalchemy.orm import scoped_session, sessionmaker
 
@@ -13,6 +15,7 @@ if not os.getenv("DATABASE_URL"):
 engine = create_engine(os.getenv("DATABASE_URL"))
 db = scoped_session(sessionmaker(bind=engine))
 
+# Checks, opens, and loads the csv onto the correct tables
 with open ('zips.csv', newline='') as csvfile:
     reader = csv.reader(csvfile, delimiter=',')
     next(reader, None)
